@@ -1,8 +1,9 @@
 function love.load()
 
-    love.window.setMode(640, 448)
     window_width = 640
     window_height = 448
+
+    love.window.setMode(window_width, window_height)
     -- start with a table for all objects
     objects = {}
     -- then we'll start with a paddle
@@ -46,7 +47,7 @@ end
 
 function pong_out(x,y)
     -- check if the pong is out of frame
-    if x < -10 or x > 650 then
+    if x < -10 then
         love.timer.sleep(0.5)
         objects.pong.xvel = 0
         objects.pong.yvel = 0
@@ -57,7 +58,24 @@ function pong_out(x,y)
         objects.pong.xvel = love.math.random(-1,1) * 3
         if objects.pong.xvel == 0 then
             objects.pong.xvel = 2
-        end 
+        end
+        objects.right_paddle.score = objects.right_paddle.score + 1
+        -- this random would change the angle on spawn
+        objects.pong.yvel = love.math.random(-1,1) * love.math.random(-3,3)
+    end
+    if x > window_width + 10 then
+        love.timer.sleep(0.5)
+        objects.pong.xvel = 0
+        objects.pong.yvel = 0
+        objects.pong.x = window_width / 2
+        objects.pong.y = window_height / 2
+        love.timer.sleep(0.25)
+        -- this random will go either left or right
+        objects.pong.xvel = love.math.random(-1,1) * 3
+        if objects.pong.xvel == 0 then
+            objects.pong.xvel = 2
+        end
+        objects.left_paddle.score = objects.left_paddle.score + 1
         -- this random would change the angle on spawn
         objects.pong.yvel = love.math.random(-1,1) * love.math.random(-3,3)
     end
@@ -106,13 +124,6 @@ function love.update(dt)
     end
     objects.pong.x = objects.pong.x + objects.pong.xvel
     objects.pong.y = objects.pong.y + objects.pong.yvel
-
-    -- scoring
-    if objects.pong.x == -5 then
-        objects.left_paddle.score = objects.left_paddle.score + 1
-    elseif objects.pong.x == window_width + 5 then
-        objects.right_paddle.score = objects.right_paddle.score + 1
-    end
     
     -- set game_over
     if objects.left_paddle.score == 0 then
@@ -125,17 +136,33 @@ end
 
 function love.draw()
     -- body
-    if objects.left_paddle.score < 3 or objects.right_paddle.score < 3 then
+    if objects.left_paddle.score < 3 and objects.right_paddle.score < 3 then
         love.graphics.rectangle("fill", objects.right_paddle.x, objects.right_paddle.y, objects.right_paddle.w, objects.right_paddle.h)
         love.graphics.rectangle("fill", objects.left_paddle.x, objects.left_paddle.y, objects.left_paddle.w, objects.left_paddle.h)
         love.graphics.circle("fill", objects.pong.x, objects.pong.y, objects.pong.r)
+        -- position of score button
         for i=-1,1 do
-            love.graphics.circle("line", objects.right_paddle.x + objects.pong.r * 5/2*i, 424, objects.pong.r)
+            -- score button counter
+            for c=1,3 do
+                -- fill scores made
+                if c < objects.right_paddle.score then
+                    love.graphics.circle("fill", objects.right_paddle.x + objects.pong.r * 5/2*i, window_height - 24, objects.pong.r)
+                else
+                    love.graphics.circle("line", objects.right_paddle.x + objects.pong.r * 5/2*i, window_height - 24, objects.pong.r)
+                end
+            end
         end
         for i=-1,1 do
-            love.graphics.circle("line", objects.left_paddle.x + objects.pong.r * 5/2*i, 424, objects.pong.r)
+            -- score button counter
+            for c = 0,2 do
+                -- fill scores made
+                if c < objects.left_paddle.score then
+                    love.graphics.circle("fill", objects.left_paddle.x + objects.pong.r * 5/2*i, window_height - 24, objects.pong.r)
+                end
+            end
+            love.graphics.circle("line", objects.left_paddle.x + objects.pong.r * 5/2*i, window_height - 24, objects.pong.r)
         end
     else
-        love.graphics.print(game_over .. "WINS", window_width/2, window_height/2, 0, 10)
+        love.graphics.print(game_over .. " WINS", window_width/2 - 75, window_height/2 - 25, 0, 2)
     end
 end
