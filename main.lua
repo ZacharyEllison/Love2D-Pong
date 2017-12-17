@@ -37,6 +37,12 @@ function love.load()
     
 end
 
+function love.keypressed(key)
+    if key == "escape" then
+       love.event.quit()
+    end
+ end
+
 function CheckCollision(x1,y1,w1,h1, x2,y2,w2,h2)
     -- from love2d wiki
     return x1 < x2+w2 and
